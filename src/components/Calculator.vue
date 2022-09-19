@@ -3,6 +3,10 @@ import { ref } from "vue";
 
 const result = ref(0);
 const current = ref(0);
+const isMemory = ref(false)
+ const savedResultsData = JSON.parse(localStorage.getItem('savedResults'))
+ const savedResults = ref(savedResultsData)
+ 
 
 // Clear all calculations
 function clear() {
@@ -85,11 +89,37 @@ function removeLastCharCalculations() {
     }
   }
 }
+
+// Add the result to the memory
+function addTodoMemory(){
+  if(localStorage.getItem('savedResults') === null){
+    savedResults.value = []
+  }
+
+  if(result.value){
+    savedResults.value.push({
+      content:result.value
+    })
+  }
+  saveData()
+}
+
+// remove saved result
+function removeSavedResult(index){
+  savedResults.value.splice(index,1)
+  saveData()
+}
+
+// Save the results in localStorage
+function saveData(){
+  const storageData = JSON.stringify(savedResults.value)
+  localStorage.setItem('savedResults',storageData)
+}
 </script>
 
 <template>
   <div
-    class="w-1/2 calculator bg-slate-900 p-8 rounded-xl text-white container grid grid-cols-5 gap-6 m-auto text-center  mt-16"
+    class="w-1/2  calculator bg-slate-900 p-8 rounded-xl text-white container grid grid-cols-5 gap-6 m-auto text-center  mt-6"
   >
     <div class="col-span-5 rounded">
       <div class="h-9 bg-green-700">{{ result }}</div>
@@ -136,7 +166,22 @@ function removeLastCharCalculations() {
     </div>
 
     <div @click="removeLastCharCalculations" class="bg-red-500 rounded-full w-4 md:w-full">
-      <button>E</button>
+      <button>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z" />
+        </svg>
+      </button>
+    </div>
+
+    <div @click="addTodoMemory" class="bg-red-500 rounded-full w-6 md:w-full"><button>MS</button></div>
+
+    <div @click="isMemory = !isMemory" class="col-span-5 bg-slate-500"><button>Memory</button></div>
+
+    <div  class="col-span-5 bg-red-100 rounded p-2" v-if="isMemory">
+      <ul>
+        <li class="flex justify-between bg-green-500 mt-2 rounded-md p-2 " v-for="(savedResult , index) in savedResults" :key="index"><span>{{savedResult.content}}</span><button class="hover:bg-red-700  hover:rounded" @click="removeSavedResult(index)">remove</button></li>
+      </ul>
+      <p class="bg-red-400 rounded-xl" v-if="savedResults.length === 0"> Empty List</p>
     </div>
   </div>
 </template>
@@ -147,7 +192,7 @@ function removeLastCharCalculations() {
 }
 
 .calculator div:hover {
-  background-color: rgb(161, 103, 103);
+  background-color: rgb(231, 189, 189);
   border-radius: 5px;
 }
 </style>
